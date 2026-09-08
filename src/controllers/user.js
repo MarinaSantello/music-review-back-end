@@ -18,19 +18,11 @@ async function login(req, res) {
 
         // busca usuário no banco
         const user = getUserByEmail(email);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'Usuário não encontrado.'
-            });
-        }
-
-        // compara senha com hash
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) {
+        const match = user ? await bcrypt.compare(password, user.password) : false;
+        if (!user || !match) {
             return res.status(401).json({
                 success: false,
-                message: 'Senha incorreta.'
+                message: 'E-mail ou senha incorreto(s).'
             })
         }
         

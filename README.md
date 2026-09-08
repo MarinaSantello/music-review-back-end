@@ -228,30 +228,12 @@ O objeto `user` contém os dados retornados pelo banco de dados.
 }
 ```
 
-**404 Not Found — Usuário não encontrado**
+**401 Unauthorized — E-mail ou Senha incorretos**
 
 ```json
 {
   "success": false,
-  "message": "Usuário não encontrado."
-}
-```
-
-**400 Bad Request — Usuário sem senha**
-
-```json
-{
-  "success": false,
-  "message": "Usuário ainda não criou senha."
-}
-```
-
-**401 Unauthorized — Senha incorreta**
-
-```json
-{
-  "success": false,
-  "message": "Senha incorreta."
+  "message": "E-mail ou senha incorreto(s)."
 }
 ```
 
