@@ -1,6 +1,5 @@
 // arquivo destinado à centralizar as funções que serão relacionadas aos endpoints da API
 
-// importa a biblioteca que gera e compara hash para a senha do usuário
 import bcrypt from "bcrypt";
 import { getUserByID, getUserByEmail, insertUser, updateNameUser, delUser } from "../models/user.js";
 
@@ -74,6 +73,13 @@ async function createUser(req, res) {
             });
         }
 
+        const emailValido = getUserByEmail(email)
+        if (emailValido)
+            return res.status(400).json({
+                success: false,
+                message: 'Este e-mail já possui uma conta ativa vinculada.'
+            });
+
         // define as regras do que é obrigatório conter no email via regex (conter caracteres válidos antes do @, deve existir exatamente um @, O domínio precisa ter ao menos um ponto (.) e uma extensão de 2 letras ou mais)
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(email)) {
@@ -107,7 +113,6 @@ async function createUser(req, res) {
             detail: err.message
         });
     }
-
 }
 
 // atualiza o nome do usuário

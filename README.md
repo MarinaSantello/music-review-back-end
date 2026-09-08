@@ -158,6 +158,15 @@ Senha@123
 }
 ```
 
+**400 Bad Request — E-mail já utilizado**
+
+```json
+{
+  "success": false,
+  "message": "Este e-mail já possui uma conta ativa vinculada."
+}
+```
+
 **400 Bad Request — Senha inválida**
 
 ```json

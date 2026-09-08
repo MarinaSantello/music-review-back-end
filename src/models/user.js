@@ -8,7 +8,7 @@ function getUserByID(id) {
 }
 
 
-// busca usuário pelo e-mail (útil para login)
+// busca usuário pelo e-mail (útil para login e validar e-mail válido)
 function getUserByEmail(email) {
     return db.prepare('SELECT * FROM user WHERE email = ?').get(email);
 }

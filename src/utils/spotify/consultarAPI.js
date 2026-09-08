@@ -80,6 +80,12 @@ async function buscarMusicaPorId(id) {
 
     if (!response.ok) {
         const erro = await response.text();
+        if (JSON.parse(erro).error.message.includes('Invalid base62 id'))
+            return {
+                'error': true,
+                'message': 'Informe uma música válida.'
+            }
+
         throw new Error(`Erro Spotify: ${response.status} - ${erro}`);
     }
 
