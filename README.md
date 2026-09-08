@@ -199,7 +199,9 @@ A senha informada é comparada com o hash armazenado no banco de dados através 
   "success": true,
   "message": "Login realizado com sucesso.",
   "user": {
-    "...": "dados do usuário"
+    "id": 0,
+    "name": "Nome do usuário",
+    "email": "usuario@email.com"
   }
 }
 ```

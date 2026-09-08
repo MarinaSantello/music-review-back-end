@@ -24,11 +24,6 @@ async function login(req, res) {
                 success: false,
                 message: 'Usuário não encontrado.'
             });
-        } else if (!user.password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Usuário ainda não criou senha.'
-            });
         }
 
         // compara senha com hash
@@ -39,6 +34,8 @@ async function login(req, res) {
                 message: 'Senha incorreta.'
             })
         }
+        
+        delete user.password
 
         return res.status(200).json({
             success: true,
