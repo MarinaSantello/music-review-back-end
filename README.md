@@ -390,51 +390,79 @@ As operações relacionadas à busca de músicas utilizam o prefixo:
 
 ## 4.1 Buscar músicas
 
-### Endpoint
+**Endpoint:** `POST /api/reviews/search`
 
-```http
-POST /api/reviews/search
-```
+Utilizado para realizar a busca de músicas pelo nome. O Back-end consulta a API do Spotify e retorna os resultados em um formato padronizado para utilização pelo Front-end.
 
-Realiza uma busca de músicas utilizando o nome informado.
+#### Requisição
 
-O controller recebe o campo `nome` e encaminha a busca para a função responsável pela consulta à API do Spotify.
-
-### Body
+**Body:**
 
 ```json
 {
-  "nome": "Nome da música"
+  "nome": "nome da música"
 }
 ```
 
-### Regras de validação
+O campo `nome` deve ser uma string não vazia contendo o termo utilizado na busca.
 
-O campo `nome`:
+> **Observação:** o endpoint de busca pode ser acionado a cada alteração no campo de pesquisa. Assim, o Back-end pode receber termos parciais e retornar resultados enquanto o usuário ainda está digitando, permitindo a exibição antecipada das músicas correspondentes.
 
-* é obrigatório;
-* deve ser uma string;
-* não pode estar vazio.
+A busca no Spotify é realizada considerando:
 
-### Resposta de sucesso
+* Tipo de resultado: `track`
+* Limite: **10 músicas** por busca.
 
-**Status:** `200 OK`
+#### Resposta de sucesso — `200 OK`
 
 ```json
 {
   "success": true,
   "message": "Músicas encontradas.",
   "musicas": [
-    "... resultados encontrados ..."
+    {
+      "id": "id-da-musica",
+      "album": {
+        "nome": "nome-do-album",
+        "capa": "url-da-capa-do-album"
+      },
+      "artistas": [
+        "nome-do-artista"
+      ],
+      "duracao": "00:00",
+      "ano": "0000",
+      "nome": "nome-da-musica",
+      "linkSpotify": "https://open.spotify.com/track/..."
+    }
   ]
 }
 ```
 
-O conteúdo do campo `musicas` corresponde aos resultados retornados pela função de consulta à API do Spotify.
+#### Estrutura de cada música
 
-### Possíveis erros
+| Campo         | Tipo            | Descrição                                       |
+| ------------- | --------------- | ----------------------------------------------- |
+| `id`          | `string`        | Identificador único da música no Spotify.       |
+| `album.nome`  | `string`        | Nome do álbum ao qual a música pertence.        |
+| `album.capa`  | `string`        | URL da imagem da capa do álbum.                 |
+| `artistas`    | `array[string]` | Lista contendo os nomes dos artistas da música. |
+| `duracao`     | `string`        | Duração da música formatada para exibição.      |
+| `ano`         | `string`        | Ano de lançamento do álbum.                     |
+| `nome`        | `string`        | Nome da música.                                 |
+| `linkSpotify` | `string`        | Link para a música no Spotify.                  |
 
-**400 Bad Request — Nome inválido**
+**Importante:** a API do Back-end não retorna diretamente a estrutura original da API do Spotify. Os dados são tratados e reorganizados antes de serem enviados ao Front-end, contendo apenas as informações necessárias para a aplicação.
+
+#### Resposta quando nenhuma música é encontrada — `404 Not Found`
+
+```json
+{
+  "success": false,
+  "message": "Músicas não encontradas."
+}
+```
+
+#### Resposta para nome inválido — `400 Bad Request`
 
 ```json
 {
@@ -443,12 +471,13 @@ O conteúdo do campo `musicas` corresponde aos resultados retornados pela funç�
 }
 ```
 
-**404 Not Found — Nenhuma música encontrada**
+#### Resposta para erro inesperado — `409 Conflict`
 
 ```json
 {
   "success": false,
-  "message": "Músicas não encontradas."
+  "message": "Erro inesperado.",
+  "detail": "Descrição do erro"
 }
 ```
 
