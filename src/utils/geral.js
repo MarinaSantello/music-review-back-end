@@ -1,5 +1,3 @@
-
-
 function formatarTempo(ms) {
     const segundos = Math.floor(ms / 1000);
     const minutos = Math.floor(segundos / 60);

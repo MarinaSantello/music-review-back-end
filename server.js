@@ -3,6 +3,7 @@
 import express from 'express';
 import cors from 'cors';
 import userRoutes from './src/routes/user.js';
+import reviewRoutes from './src/routes/review.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.use((err, req, res, next) => {
     if (err && err.type === 'entity.parse.failed') {

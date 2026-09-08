@@ -30,7 +30,7 @@ async function obterToken() {
     return data.access_token;
 }
 
-async function buscarMusicaPorNome(nome) {
+async function buscarMusicasPorNome(nome) {
     const token = await obterToken();
 
     const url = new URL('https://api.spotify.com/v1/search');
@@ -100,6 +100,6 @@ async function buscarMusicaPorId(id) {
 }
 
 export {
-    buscarMusicaPorNome,
+    buscarMusicasPorNome,
     buscarMusicaPorId
 }
