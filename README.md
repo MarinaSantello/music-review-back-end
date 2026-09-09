@@ -393,11 +393,11 @@ Utilizado para realizar a busca de músicas pelo nome. O Back-end consulta a API
 
 ```json
 {
-  "nome": "nome da música"
+  "name": "nome da música"
 }
 ```
 
-O campo `nome` deve ser uma string não vazia contendo o termo utilizado na busca.
+O campo `name` deve ser uma string não vazia contendo o termo utilizado na busca.
 
 > **Observação:** o endpoint de busca pode ser acionado a cada alteração no campo de pesquisa. Assim, o Back-end pode receber termos parciais e retornar resultados enquanto o usuário ainda está digitando, permitindo a exibição antecipada das músicas correspondentes.
 
@@ -408,41 +408,45 @@ A busca no Spotify é realizada considerando:
 
 #### Resposta de sucesso — `200 OK`
 
-```json
-{
-  "success": true,
-  "message": "Músicas encontradas.",
-  "musicas": [
-    {
-      "id": "id-da-musica",
-      "album": {
-        "nome": "nome-do-album",
-        "capa": "url-da-capa-do-album"
-      },
-      "artistas": [
-        "nome-do-artista"
-      ],
-      "duracao": "00:00",
-      "ano": "0000",
-      "nome": "nome-da-musica",
-      "linkSpotify": "https://open.spotify.com/track/..."
-    }
-  ]
-}
+```javascript
+[
+  {
+    "success": true,
+    "message": "Músicas encontradas.",
+    "musicas": [
+      {
+        "id": "id-da-musica",
+        "album": {
+          "nome": "nome-do-album",
+          "capa": "url-da-capa-do-album"
+        },
+        "artistas": [
+          "nome-do-artista"
+        ],
+        "duracao": "00:00",
+        "ano": "0000",
+        "nome": "nome-da-musica",
+        "linkSpotify": "https://open.spotify.com/track/...",
+        "rate": 0 || "Sem nota"
+      }
+    ]
+  }
+]
 ```
 
 #### Estrutura de cada música
 
-| Campo         | Tipo            | Descrição                                       |
-| ------------- | --------------- | ----------------------------------------------- |
-| `id`          | `string`        | Identificador único da música no Spotify.       |
-| `album.nome`  | `string`        | Nome do álbum ao qual a música pertence.        |
-| `album.capa`  | `string`        | URL da imagem da capa do álbum.                 |
-| `artistas`    | `array[string]` | Lista contendo os nomes dos artistas da música. |
-| `duracao`     | `string`        | Duração da música formatada para exibição.      |
-| `ano`         | `string`        | Ano de lançamento do álbum.                     |
-| `nome`        | `string`        | Nome da música.                                 |
-| `linkSpotify` | `string`        | Link para a música no Spotify.                  |
+| Campo         | Tipo               | Descrição                                       |
+| ------------- | ------------------ | ----------------------------------------------- |
+| `id`          | `string`           | Identificador único da música no Spotify.       |
+| `album.nome`  | `string`           | Nome do álbum ao qual a música pertence.        |
+| `album.capa`  | `string`           | URL da imagem da capa do álbum.                 |
+| `artistas`    | `array[string]`    | Lista contendo os nomes dos artistas da música. |
+| `duracao`     | `string`           | Duração da música formatada para exibição.      |
+| `ano`         | `string`           | Ano de lançamento do álbum.                     |
+| `nome`        | `string`           | Nome da música.                                 |
+| `linkSpotify` | `string`           | Link para a música no Spotify.                  |
+| `rate`        | `Number or string` | Médias das notas da música (quando há)          |
 
 **Importante:** a API do Back-end não retorna diretamente a estrutura original da API do Spotify. Os dados são tratados e reorganizados antes de serem enviados ao Front-end, contendo apenas as informações necessárias para a aplicação.
 

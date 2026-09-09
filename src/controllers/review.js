@@ -1,27 +1,37 @@
 // arquivo destinado à centralizar as funções que serão relacionadas aos endpoints da API
 
 import { buscarMusicasPorNome, buscarMusicaPorId } from "../utils/spotify/consultarAPI.js";
-import { getReviewByID, getReviewsByUser, insertReview, updateReview, removeReview } from "../models/review.js";
+import { getReviewByID, getReviewsByUser, getAverageRate, insertReview, updateReview, removeReview } from "../models/review.js";
 
 async function searchMusics(req, res) {
     try {
-        const { nome } = req.body;
+        const { name } = req.body;
 
         // valida a presença do nome da música
-        if (!nome || typeof nome !== 'string' || nome.trim() === '') {
+        if (!name || typeof name !== 'string' || name.trim() === '') {
             return res.status(400).json({
                 success: false,
                 message: 'Informe um nome válido.'
             });
         }
 
-        const musicas = await buscarMusicasPorNome(nome)
+        let musicas = await buscarMusicasPorNome(name)
 
         if (!musicas || !Array.isArray(musicas) || musicas.length === 0)
             return res.status(404).json({
                 success: false,
                 message: 'Músicas não encontradas.'
             });
+
+        musicas = await Promise.all(
+            musicas.map(async musica => {
+                const rate = getAverageRate(musica.id)
+
+                return {
+                    ...musica,
+                    rate: rate.averageRate ? rate.averageRate : 'Sem nota'
+                }
+            }))
 
         return res.status(200).json({
             success: true,

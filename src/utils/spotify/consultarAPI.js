@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { formatarTempo } from "../geral.js";
+import { getAverageRate } from "../../models/review.js";
 
 dotenv.config();
 
@@ -52,18 +53,23 @@ async function buscarMusicasPorNome(nome) {
 
     const result = await response.json();
 
-    return result.tracks.items.map(resposta => ({
-        id: resposta.id,
-        album: {
-            nome: resposta.album.name,
-            capa: resposta.album.images[1].url
-        },
-        artistas: resposta.artists.map(artist => artist.name),
-        duracao: formatarTempo(resposta.duration_ms),
-        ano: resposta.album.release_date.split('-')[0],
-        nome: resposta.name,
-        linkSpotify: resposta.external_urls.spotify
-    }));
+    return result.tracks.items.map(resposta => {
+        const rate = getAverageRate(resposta.id)
+        
+        return {
+            id: resposta.id,
+            album: {
+                nome: resposta.album.name,
+                capa: resposta.album.images[1].url
+            },
+            artistas: resposta.artists.map(artist => artist.name),
+            duracao: formatarTempo(resposta.duration_ms),
+            ano: resposta.album.release_date.split('-')[0],
+            nome: resposta.name,
+            linkSpotify: resposta.external_urls.spotify,
+            rate: rate.averageRate ? rate.averageRate : 'Sem nota'
+        }
+    });
 }
 
 async function buscarMusicaPorId(id) {
@@ -91,17 +97,20 @@ async function buscarMusicaPorId(id) {
 
     const result = await response.json();
 
+    const rate = getAverageRate(result.id)
+
     return {
-        'id': result.id,
-        'album': {
-            'nome': result.album.name,
-            'capa': result.album.images[1].url
+        id: result.id,
+        album: {
+            nome: result.album.name,
+            capa: result.album.images[1].url
         },
-        'artistas': result.artists.map(artist => artist.name),
-        'duracao': formatarTempo(result.duration_ms),
-        'ano': result.album.release_date.split('-')[0],
-        'nome': result.name,
-        'linkSpotify': result.external_urls.spotify
+        artistas: result.artists.map(artist => artist.name),
+        duracao: formatarTempo(result.duration_ms),
+        ano: result.album.release_date.split('-')[0],
+        nome: result.name,
+        linkSpotify: result.external_urls.spotify,
+        rate: rate.averageRate ? rate.averageRate : 'Sem nota'
     }
 }
 
