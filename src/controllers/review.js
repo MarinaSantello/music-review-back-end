@@ -208,9 +208,107 @@ async function getReviewWithUser(req, res) {
     }
 }
 
+async function updateReviewData(req, res) {
+    try {
+        const { user_id, review_id, name, rate, description } = req.body;
+        const userId = parseInt(user_id);
+        const reviewId = parseInt(review_id);
+
+        if (!userId || isNaN(userId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Identificar o usuário é obrigatório.'
+            });
+        } else if (!reviewId || isNaN(reviewId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Identificar a Review é obrigatório.'
+            });
+        }
+
+        const review = getReviewByID(reviewId);
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Review não encontrada.'
+            });
+        } else if (review.user != userId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Este usuário não pode atualizar essa Review.'
+            });
+        }
+
+        let data = {}
+
+        if (name) data.name = name
+        if (rate) data.rate = rate
+        if (description) data.description = description
+
+        updateReview(data, reviewId)
+
+        return res.status(200).json({
+            'success': true,
+            message: 'Review atualizada com sucesso.'
+        });
+    } catch (err) {
+        return res.status(409).json({
+            message: 'Erro inesperado.',
+            detail: err.message
+        });
+    }
+}
+
+async function deleteReview(req, res) {
+    try {
+        const { user_id, review_id } = req.body;
+        const userId = parseInt(user_id);
+        const reviewId = parseInt(review_id);
+
+        if (!userId || isNaN(userId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Identificar o usuário é obrigatório.'
+            });
+        } else if (!reviewId || isNaN(reviewId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Identificar a Review é obrigatório.'
+            });
+        }
+
+        const review = getReviewByID(reviewId);
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Review não encontrada.'
+            });
+        } else if (review.user != userId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Este usuário não pode excluir essa Review.'
+            });
+        }
+
+        removeReview(reviewId);
+
+        return res.status(200).json({
+            'success': true,
+            message: 'Review removida com sucesso.'
+        });
+    } catch (err) {
+        return res.status(409).json({
+            message: 'Erro inesperado.',
+            detail: err.message
+        });
+    }
+}
+
 export {
     searchMusics,
     createReview,
     getReviewWithID,
-    getReviewWithUser
+    getReviewWithUser,
+    updateReviewData,
+    deleteReview
 }
