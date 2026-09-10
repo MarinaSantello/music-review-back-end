@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { formatarTempo } from "../geral.js";
-import { getAverageRate } from "../../models/review.js";
+import { getAverageRate, getSumLikes } from "../../models/review.js";
 
 dotenv.config();
 
@@ -53,23 +53,62 @@ async function buscarMusicasPorNome(nome) {
 
     const result = await response.json();
 
-    return result.tracks.items.map(resposta => {
-        const rate = getAverageRate(resposta.id)
-        
-        return {
-            id: resposta.id,
-            album: {
-                nome: resposta.album.name,
-                capa: resposta.album.images[1].url
-            },
-            artistas: resposta.artists.map(artist => artist.name),
-            duracao: formatarTempo(resposta.duration_ms),
-            ano: resposta.album.release_date.split('-')[0],
-            nome: resposta.name,
-            linkSpotify: resposta.external_urls.spotify,
-            rate: rate.averageRate ? rate.averageRate : 'Sem nota'
+    const resultado = await Promise.all(
+        result.tracks.items.map(async resposta => {
+            const rate = getAverageRate(resposta.id);
+            const qtd_likes = getSumLikes(resposta.id);
+
+            const artistas = await Promise.all(
+                resposta.artists.map(async artist => {
+
+                    const artista = await buscarArtista(artist.id);
+
+                    return {
+                        nome: artist.name,
+                        icone: artista.images[1].url
+                    };
+                })
+            );
+
+            return {
+                id: resposta.id,
+                album: {
+                    nome: resposta.album.name,
+                    capa: resposta.album.images[1].url
+                },
+                artistas: artistas,
+                duracao: formatarTempo(resposta.duration_ms),
+                ano: resposta.album.release_date.split('-')[0],
+                nome: resposta.name,
+                linkSpotify: resposta.external_urls.spotify,
+                rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota',
+                qtd_likes: qtd_likes.qtdLikes
+            };
+        })
+    );
+
+    return resultado;
+}
+
+async function buscarArtista(id) {
+    const token = await obterToken();
+
+    const url = new URL(`https://api.spotify.com/v1/artists/${id}`);
+
+    const response = await fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${token}`
         }
     });
+
+    if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(`Erro Spotify: ${response.status} - ${erro}`);
+    }
+
+    const result = await response.json();
+
+    return result
 }
 
 async function buscarMusicaPorId(id) {
@@ -98,20 +137,36 @@ async function buscarMusicaPorId(id) {
     const result = await response.json();
 
     const rate = getAverageRate(result.id)
+    const qtd_likes = getSumLikes(result.id);
 
-    return {
+    const artistas = await Promise.all(
+        result.artists.map(async artist => {
+
+            const artista = await buscarArtista(artist.id);
+
+            return {
+                nome: artist.name,
+                icone: artista.images[1].url
+            };
+        })
+    );
+
+    const resultado =  {
         id: result.id,
         album: {
             nome: result.album.name,
             capa: result.album.images[1].url
         },
-        artistas: result.artists.map(artist => artist.name),
+        artistas: artistas,
         duracao: formatarTempo(result.duration_ms),
         ano: result.album.release_date.split('-')[0],
         nome: result.name,
         linkSpotify: result.external_urls.spotify,
-        rate: rate.averageRate ? rate.averageRate : 'Sem nota'
-    }
+        rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota',
+        qtd_likes: qtd_likes.qtdLikes
+    };
+
+    return resultado;
 }
 
 export {

@@ -421,13 +421,17 @@ A busca no Spotify é realizada considerando:
           "capa": "url-da-capa-do-album"
         },
         "artistas": [
-          "nome-do-artista"
+          {
+            "nome": "nome-do-artista",
+            "icone": "url-do-icone-do-artista"
+          }
         ],
         "duracao": "00:00",
         "ano": "0000",
         "nome": "nome-da-musica",
         "linkSpotify": "https://open.spotify.com/track/...",
-        "rate": 0 || "Sem nota"
+        "rate": 0 || "Sem nota",
+        "qtd_likes": 0 || null
       }
     ]
   }
@@ -436,17 +440,20 @@ A busca no Spotify é realizada considerando:
 
 #### Estrutura de cada música
 
-| Campo         | Tipo               | Descrição                                       |
-| ------------- | ------------------ | ----------------------------------------------- |
-| `id`          | `string`           | Identificador único da música no Spotify.       |
-| `album.nome`  | `string`           | Nome do álbum ao qual a música pertence.        |
-| `album.capa`  | `string`           | URL da imagem da capa do álbum.                 |
-| `artistas`    | `array[string]`    | Lista contendo os nomes dos artistas da música. |
-| `duracao`     | `string`           | Duração da música formatada para exibição.      |
-| `ano`         | `string`           | Ano de lançamento do álbum.                     |
-| `nome`        | `string`           | Nome da música.                                 |
-| `linkSpotify` | `string`           | Link para a música no Spotify.                  |
-| `rate`        | `Number or string` | Médias das notas da música (quando há)          |
+| Campo         | Tipo               | Descrição                                           |
+| ------------- | ------------------ | --------------------------------------------------- |
+| `id`          | `string`           | Identificador único da música no Spotify.           |
+| `album.nome`  | `string`           | Nome do álbum ao qual a música pertence.            |
+| `album.capa`  | `string`           | URL da imagem da capa do álbum.                     |
+| `artistas`    | `array[string]`    | Lista contendo os nomes dos artistas da música.     |
+| `duracao`     | `string`           | Duração da música formatada para exibição.          |
+| `ano`         | `string`           | Ano de lançamento do álbum.                         |
+| `nome`        | `string`           | Nome da música.                                     |
+| `linkSpotify` | `string`           | Link para a música no Spotify.                      |
+| `rate`        | `Number or string` | Médias das notas da música (quando há)              |
+| `qtd_likes`   | `Number or null`   | Quantidade de likes que essa música tem (quando há) |
+
+**Sobre o rate:** varia de 0 a 10. Se a música não tiver avaliações, será exibido "Sem nota". Quando possível, a avaliação é apresentada entre 5 estrelas (exemplo: rate 7 = 3,5 estrelas).
 
 **Importante:** a API do Back-end não retorna diretamente a estrutura original da API do Spotify. Os dados são tratados e reorganizados antes de serem enviados ao Front-end, contendo apenas as informações necessárias para a aplicação.
 

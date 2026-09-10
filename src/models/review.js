@@ -18,6 +18,11 @@ function getAverageRate(id_spotify) {
     return db.prepare('SELECT AVG(rate) AS averageRate FROM review WHERE id_spotify = ?').get(id_spotify);
 }
 
+// busca a quantidades de likes de uma música
+function getSumLikes(id_spotify) {
+    return db.prepare('SELECT SUM(like) AS qtdLikes FROM review WHERE id_spotify = ?').get(id_spotify);
+}
+
 // cria uma review 
 function insertReview(data) {
     const chaves = Object.keys(data);
@@ -58,6 +63,7 @@ export {
     getReviewByID,
     getReviewsByUser,
     getAverageRate,
+    getSumLikes,
     insertReview,
     updateReview,
     removeReview

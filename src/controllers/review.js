@@ -1,7 +1,7 @@
 // arquivo destinado à centralizar as funções que serão relacionadas aos endpoints da API
 
 import { buscarMusicasPorNome, buscarMusicaPorId } from "../utils/spotify/consultarAPI.js";
-import { getReviewByID, getReviewsByUser, getAverageRate, insertReview, updateReview, removeReview } from "../models/review.js";
+import { getReviewByID, getReviewsByUser, getAverageRate, getSumLikes, insertReview, updateReview, removeReview } from "../models/review.js";
 
 async function searchMusics(req, res) {
     try {
@@ -29,7 +29,7 @@ async function searchMusics(req, res) {
 
                 return {
                     ...musica,
-                    rate: rate.averageRate ? rate.averageRate : 'Sem nota'
+                    rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota'
                 }
             }))
 
@@ -49,7 +49,7 @@ async function searchMusics(req, res) {
 
 async function createReview(req, res) {
     try {
-        const { user, id_spotify, name, rate, description } = req.body;
+        const { user, id_spotify, name, rate } = req.body;
         const userId = parseInt(user)
         const nota = parseInt(rate)
 
@@ -68,7 +68,7 @@ async function createReview(req, res) {
                 success: false,
                 message: 'O nome para a Review é obrigatório.'
             });
-        } else if (!nota || isNaN(nota)) {
+        } else if (isNaN(nota)) {
             return res.status(400).json({
                 success: false,
                 message: 'A nota é obrigatória.'
@@ -210,7 +210,7 @@ async function getReviewWithUser(req, res) {
 
 async function updateReviewData(req, res) {
     try {
-        const { user_id, review_id, name, rate, description } = req.body;
+        const { user_id, review_id, name, rate, like, description } = req.body;
         const userId = parseInt(user_id);
         const reviewId = parseInt(review_id);
 
@@ -241,8 +241,15 @@ async function updateReviewData(req, res) {
 
         let data = {}
 
+        data.updated_at = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'America/Sao_Paulo',
+            dateStyle: 'short',
+            timeStyle: 'medium',
+        }).format(new Date()).replace(',', '');
+
         if (name) data.name = name
-        if (rate) data.rate = rate
+        if (!isNaN(parseInt(rate))) data.rate = rate
+        if (!isNaN(parseInt(like))) data.like = like
         if (description) data.description = description
 
         updateReview(data, reviewId)
