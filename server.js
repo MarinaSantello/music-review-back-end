@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import userRoutes from './src/routes/user.js';
 import reviewRoutes from './src/routes/review.js';
+import curtidaRoutes from './src/routes/curtida.js';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/curtidas', curtidaRoutes);
 
 app.use((err, req, res, next) => {
     if (err && err.type === 'entity.parse.failed') {

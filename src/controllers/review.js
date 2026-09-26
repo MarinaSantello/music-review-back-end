@@ -1,7 +1,8 @@
 // arquivo destinado à centralizar as funções que serão relacionadas aos endpoints da API
 
 import { buscarMusicasPorNome, buscarMusicaPorId } from "../utils/spotify/consultarAPI.js";
-import { getReviewByID, getReviewsByUser, getAverageRate, getSumLikes, insertReview, updateReview, removeReview } from "../models/review.js";
+import { getReviewByID, getReviewsByUser, getAverageRate, insertReview, updateReview, removeReview } from "../models/review.js";
+import { getLikesReview, getLike } from "../models/curtida.js";
 
 async function searchMusics(req, res) {
     try {
@@ -142,6 +143,8 @@ async function getReviewWithID(req, res) {
 
         review.musica = musica
         review.autoral = review.user == userId
+        review.qtd_likes_review = getLikesReview(reviewId).total_likes
+        review.user_liked_review = getLike(userId, reviewId).length > 0
 
         return res.status(200).json({
             'success': true,
@@ -192,7 +195,9 @@ async function getReviewWithUser(req, res) {
                 return {
                     ...review,
                     musica: musica,
-                    autoral: review.user == authorId
+                    autoral: review.user == authorId,
+                    qtd_likes_review: getLikesReview(review.id).total_likes,
+                    user_liked_review: getLike(userId, review.id).length > 0
                 }
             }))
 
@@ -210,7 +215,7 @@ async function getReviewWithUser(req, res) {
 
 async function updateReviewData(req, res) {
     try {
-        const { user_id, review_id, name, rate, like, description } = req.body;
+        const { user_id, review_id, name, rate, liked, description } = req.body;
         const userId = parseInt(user_id);
         const reviewId = parseInt(review_id);
 
@@ -249,7 +254,7 @@ async function updateReviewData(req, res) {
 
         if (name) data.name = name
         if (!isNaN(parseInt(rate))) data.rate = rate
-        if (!isNaN(parseInt(like))) data.like = like
+        if (!isNaN(parseInt(liked))) data.liked = liked
         if (description) data.description = description
 
         updateReview(data, reviewId)
