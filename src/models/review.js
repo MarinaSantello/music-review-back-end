@@ -23,6 +23,11 @@ function getSumLikes(id_spotify) {
     return db.prepare('SELECT SUM(liked) AS qtdLikes FROM review WHERE id_spotify = ?').get(id_spotify);
 }
 
+// busca se o usuário curtiu a música
+function getLikeUser(userId, spotifyId) {
+    return db.prepare('SELECT * FROM review WHERE user = ? AND id_spotify = ? AND liked > 0').all(userId, spotifyId);
+}
+
 // cria uma review 
 function insertReview(data) {
     const chaves = Object.keys(data);
@@ -64,6 +69,7 @@ export {
     getReviewsByUser,
     getAverageRate,
     getSumLikes,
+    getLikeUser,
     insertReview,
     updateReview,
     removeReview

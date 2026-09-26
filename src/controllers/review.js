@@ -1,12 +1,20 @@
 // arquivo destinado à centralizar as funções que serão relacionadas aos endpoints da API
 
 import { buscarMusicasPorNome, buscarMusicaPorId } from "../utils/spotify/consultarAPI.js";
-import { getReviewByID, getReviewsByUser, getAverageRate, insertReview, updateReview, removeReview } from "../models/review.js";
+import { getReviewByID, getReviewsByUser, insertReview, updateReview, removeReview } from "../models/review.js";
 import { getLikesReview, getLike } from "../models/curtida.js";
 
 async function searchMusics(req, res) {
     try {
-        const { name } = req.body;
+        const { user_id, name } = req.body;
+        const userId = parseInt(user_id)
+
+        if (!userId || isNaN(userId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Identificar o usuário é obrigatório.'
+            });
+        }
 
         // valida a presença do nome da música
         if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -16,23 +24,13 @@ async function searchMusics(req, res) {
             });
         }
 
-        let musicas = await buscarMusicasPorNome(name)
+        let musicas = await buscarMusicasPorNome(name, userId)
 
         if (!musicas || !Array.isArray(musicas) || musicas.length === 0)
             return res.status(404).json({
                 success: false,
                 message: 'Músicas não encontradas.'
             });
-
-        musicas = await Promise.all(
-            musicas.map(async musica => {
-                const rate = getAverageRate(musica.id)
-
-                return {
-                    ...musica,
-                    rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota'
-                }
-            }))
 
         return res.status(200).json({
             success: true,
@@ -50,7 +48,7 @@ async function searchMusics(req, res) {
 
 async function createReview(req, res) {
     try {
-        const { user, id_spotify, name, rate } = req.body;
+        const { user, id_spotify, name, rate, liked } = req.body;
         const userId = parseInt(user)
         const nota = parseInt(rate)
 
@@ -75,13 +73,6 @@ async function createReview(req, res) {
                 message: 'A nota é obrigatória.'
             });
         }
-
-        const musicaValida = await buscarMusicaPorId(id_spotify)
-        if (musicaValida.error)
-            return res.status(400).json({
-                success: false,
-                message: musicaValida.message
-            });
 
         const data = req.body
 
@@ -133,13 +124,15 @@ async function getReviewWithID(req, res) {
                 message: 'Review não encontrada.'
             });
 
-        const musica = await buscarMusicaPorId(review.id_spotify)
+        const musica = await buscarMusicaPorId(review, userId)
 
         if (musica.error)
             return res.status(400).json({
                 success: false,
                 message: musica.message
             });
+
+        delete review.liked
 
         review.musica = musica
         review.autoral = review.user == userId
@@ -167,7 +160,7 @@ async function getReviewWithUser(req, res) {
         if (!userId || isNaN(userId)) {
             res.status(400).json({
                 success: false,
-                message: 'Identificar o usuário é obrigatório.'
+                message: 'Identificar o usuário consultado é obrigatório.'
             });
         } else if (!authorId || isNaN(authorId)) {
             res.status(400).json({
@@ -185,12 +178,14 @@ async function getReviewWithUser(req, res) {
 
         reviews = await Promise.all(
             reviews.map(async review => {
-                const musica = await buscarMusicaPorId(review.id_spotify)
+                const musica = await buscarMusicaPorId(review, authorId)
                 if (musica.error)
                     return res.status(400).json({
                         success: false,
                         message: musica.message
                     });
+
+                delete review.liked
 
                 return {
                     ...review,

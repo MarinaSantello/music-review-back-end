@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { formatarTempo } from "../geral.js";
-import { getAverageRate, getSumLikes } from "../../models/review.js";
+import { getAverageRate, getSumLikes, getLikeUser } from "../../models/review.js";
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ async function obterToken() {
     return data.access_token;
 }
 
-async function buscarMusicasPorNome(nome) {
+async function buscarMusicasPorNome(nome, userId) {
     const token = await obterToken();
 
     const url = new URL('https://api.spotify.com/v1/search');
@@ -47,6 +47,12 @@ async function buscarMusicasPorNome(nome) {
     });
 
     if (!response.ok) {
+        if (response.status == 429) {
+            const retryAfter = Number(response.headers.get('retry-after'))
+            
+            return calculaEsperaSpotify(retryAfter)
+        }
+
         const erro = await response.text();
         throw new Error(`Erro Spotify: ${response.status} - ${erro}`);
     }
@@ -82,6 +88,7 @@ async function buscarMusicasPorNome(nome) {
                 nome: resposta.name,
                 linkSpotify: resposta.external_urls.spotify,
                 rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota',
+                liked: getLikeUser(userId, resposta.id).length > 0,
                 qtd_likes: qtd_likes.qtdLikes
             };
         })
@@ -102,6 +109,12 @@ async function buscarArtista(id) {
     });
 
     if (!response.ok) {
+        if (response.status == 429) {
+            const retryAfter = Number(response.headers.get('retry-after'))
+            
+            return calculaEsperaSpotify(retryAfter)
+        }
+
         const erro = await response.text();
         throw new Error(`Erro Spotify: ${response.status} - ${erro}`);
     }
@@ -111,11 +124,11 @@ async function buscarArtista(id) {
     return result
 }
 
-async function buscarMusicaPorId(id) {
+async function buscarMusicaPorId(review, userId) {
     const token = await obterToken();
 
     const response = await fetch(
-        `https://api.spotify.com/v1/tracks/${id}`,
+        `https://api.spotify.com/v1/tracks/${review.id_spotify}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -124,13 +137,18 @@ async function buscarMusicaPorId(id) {
     );
 
     if (!response.ok) {
-        const erro = await response.text();
-        if (JSON.parse(erro).error.message.includes('Invalid base62 id'))
+        if (response.status == 429) {
+            const retryAfter = Number(response.headers.get('retry-after'))
+
+            return calculaEsperaSpotify(retryAfter)
+        }
+        else if (response.statusText.includes('Invalid base62 id'))
             return {
                 'error': true,
                 'message': 'Informe uma música válida.'
             }
 
+        const erro = await response.text();
         throw new Error(`Erro Spotify: ${response.status} - ${erro}`);
     }
 
@@ -151,7 +169,7 @@ async function buscarMusicaPorId(id) {
         })
     );
 
-    const resultado =  {
+    const resultado = {
         id: result.id,
         album: {
             nome: result.album.name,
@@ -163,10 +181,30 @@ async function buscarMusicaPorId(id) {
         nome: result.name,
         linkSpotify: result.external_urls.spotify,
         rate: rate.averageRate !== null ? rate.averageRate : 'Sem nota',
+        author_liked: review.liked > 0,
+        user_liked: getLikeUser(userId, review.id_spotify).length > 0,
         qtd_likes: qtd_likes.qtdLikes
     };
 
     return resultado;
+}
+
+function calculaEsperaSpotify(retryAfter) {
+    const horas = Math.floor(retryAfter / 3600)
+    const minutos = Math.ceil((retryAfter % 3600) / 60)
+
+    let tempo = ''
+
+    if (horas > 0)
+        tempo += `${horas} hora${horas > 1 ? 's' : ''}`
+
+    if (minutos > 0)
+        tempo += `${tempo ? ' e ' : ''}${minutos} minuto${minutos > 1 ? 's' : ''}`
+
+    return {
+        error: true,
+        message: `Desculpe pelo inconveniente! Não foi possível realizar a consulta no momento, pois o serviço atingiu temporariamente o limite de consultas. Tente novamente em ${tempo}.`
+    }
 }
 
 export {
