@@ -10,7 +10,7 @@ async function searchMusics(req, res) {
         const userId = parseInt(user_id)
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário é obrigatório.'
             });
@@ -106,12 +106,12 @@ async function getReviewWithID(req, res) {
         const reviewId = parseInt(review_id);
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário é obrigatório.'
             });
         } else if (!reviewId || isNaN(reviewId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar a Review é obrigatório.'
             });
@@ -158,12 +158,12 @@ async function getReviewWithUser(req, res) {
         const authorId = parseInt(author_id);
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário consultado é obrigatório.'
             });
         } else if (!authorId || isNaN(authorId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o autor da consulta é obrigatório.'
             });
@@ -215,12 +215,12 @@ async function updateReviewData(req, res) {
         const reviewId = parseInt(review_id);
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário é obrigatório.'
             });
         } else if (!reviewId || isNaN(reviewId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar a Review é obrigatório.'
             });
@@ -233,7 +233,7 @@ async function updateReviewData(req, res) {
                 message: 'Review não encontrada.'
             });
         } else if (review.user != userId) {
-            return res.status(404).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Este usuário não pode atualizar essa Review.'
             });
@@ -273,12 +273,12 @@ async function deleteReview(req, res) {
         const reviewId = parseInt(review_id);
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário é obrigatório.'
             });
         } else if (!reviewId || isNaN(reviewId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar a Review é obrigatório.'
             });
@@ -291,7 +291,7 @@ async function deleteReview(req, res) {
                 message: 'Review não encontrada.'
             });
         } else if (review.user != userId) {
-            return res.status(404).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Este usuário não pode excluir essa Review.'
             });

@@ -46,12 +46,12 @@ async function deleteLike(req, res) {
         const reviewId = parseInt(review)
 
         if (!userId || isNaN(userId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar o usuário é obrigatório.'
             });
         } else if (!reviewId || isNaN(reviewId)) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: 'Identificar a Review é obrigatório.'
             });

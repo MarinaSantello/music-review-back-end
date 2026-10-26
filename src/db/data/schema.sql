@@ -27,11 +27,3 @@ CREATE TABLE IF NOT EXISTS curtida_review (
     review INTEGER NOT NULL REFERENCES review(id),
     UNIQUE (user, review)
 );
-
-CREATE TABLE IF NOT EXISTS comentario_review (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    texto TEXT NOT NULL,
-    user INTEGER NOT NULL REFERENCES user(id),
-    review INTEGER NOT NULL REFERENCES review(id),
-    UNIQUE (user, review)
-);
